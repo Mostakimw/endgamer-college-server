@@ -23,6 +23,8 @@ const client = new MongoClient(uri, {
 });
 
 const collegesCollection = client.db("endgamerCollege").collection("colleges");
+const usersCollection = client.db("endgamerCollege").collection("users");
+const reviewsCollection = client.db("endgamerCollege").collection("reviews");
 const candidatesCollection = client
   .db("endgamerCollege")
   .collection("candidates");
@@ -31,6 +33,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    // ! search functionality
+    app.get("/colleges/college-name/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const query = {
+        collegeName: { $regex: searchText, $options: "i" },
+      };
+      const result = await collegesCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // ! getting colleges data
     app.get("/colleges", async (req, res) => {
@@ -59,6 +71,60 @@ async function run() {
       const candidate = req.body;
       console.log(candidate);
       const result = await candidatesCollection.insertOne(candidate);
+      res.send(result);
+    });
+
+    //! get candidate data
+    app.get("/candidates", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const query = { email: email };
+      const result = await candidatesCollection.findOne(query);
+      res.send(result);
+    });
+
+    //! save user to db
+    app.post("/users", async (req, res) => {
+      const userData = req.body;
+      const result = await usersCollection.insertOne(userData);
+      res.send(result);
+    });
+
+    //!get user data
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    //! updating user info
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const userData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          name: userData?.name,
+          university: userData?.university,
+          address: userData?.address,
+          description: userData?.description,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // ! send review data to db
+    app.post("/reviews", async (req, res) => {
+      const reviewData = req.body;
+      const result = await reviewsCollection.insertOne(reviewData);
+      res.send(result);
+    });
+
+    //! get als reviews data
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewsCollection.find().toArray();
       res.send(result);
     });
 
