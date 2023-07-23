@@ -32,7 +32,7 @@ const candidatesCollection = client
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // ! search functionality
     app.get("/colleges/college-name/:text", async (req, res) => {
@@ -69,7 +69,6 @@ async function run() {
     // ! post candidates data
     app.post("/candidates", async (req, res) => {
       const candidate = req.body;
-      console.log(candidate);
       const result = await candidatesCollection.insertOne(candidate);
       res.send(result);
     });
@@ -77,7 +76,6 @@ async function run() {
     //! get candidate data
     app.get("/candidates", async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       const query = { email: email };
       const result = await candidatesCollection.findOne(query);
       res.send(result);
