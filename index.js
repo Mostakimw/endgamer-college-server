@@ -69,6 +69,11 @@ async function run() {
     // ! post candidates data
     app.post("/candidates", async (req, res) => {
       const candidate = req.body;
+      const userEmail = candidate.email; // Assuming you have a unique identifier for the user
+      await usersCollection.updateOne(
+        { userEmail: userEmail },
+        { $set: { isApplied: true } }
+      );
       const result = await candidatesCollection.insertOne(candidate);
       res.send(result);
     });
@@ -84,6 +89,11 @@ async function run() {
     //! save user to db
     app.post("/users", async (req, res) => {
       const userData = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exist" });
+      }
       const result = await usersCollection.insertOne(userData);
       res.send(result);
     });
